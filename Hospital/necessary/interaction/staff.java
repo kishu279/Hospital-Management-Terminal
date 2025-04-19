@@ -29,6 +29,7 @@ public class staff {
                 break;
             } else if (loggedIn == 2) {
                 // recieptionist interaction
+                staff.RecieptionistInteraction();
                 break;
             } else {
                 System.out.println("Failed to login");
@@ -60,7 +61,7 @@ public class staff {
                 appointmentId = sc.nextInt();
 
                 // Appointment status update
-                
+
             
             }
 
