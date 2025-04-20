@@ -3,7 +3,6 @@ package Hospital.necessary.database;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -36,11 +35,12 @@ public class StaffTable {
                     String field = rs.getString("staffField");
                     String role = rs.getString("role");
 
-                    System.out.println("Logged in as " + staffName + " with id: " + staffId + ", workding as : " + field);
+                    System.out
+                            .println("Logged in as " + staffName + " with id: " + staffId + ", workding as : " + field);
 
-                    if(role.equals("doctor")) {
+                    if (role.equals("doctor")) {
                         return 1;
-                    } else if(role.equals("recieptionist")) {
+                    } else if (role.equals("receptionist")) {
                         return 2;
                     }
 
@@ -58,4 +58,41 @@ public class StaffTable {
 
     }
 
+    public static ArrayList<String> getDoctorList() {
+
+        Connection conn = Connector.connector();
+
+        if (conn == null) {
+            System.out.println("Failed to get database connection.");
+
+            return new ArrayList<String>();
+        }
+
+        String query = "SELECT * FROM staff WHERE role='doctor'";
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            ResultSet rs = stmt.executeQuery();
+            ArrayList<String> resultArray = new ArrayList<String>();
+
+            while (rs.next()) {
+
+                String doctorName = rs.getString("name");
+                String staffId = rs.getString("staffId");
+                String field = rs.getString("field");
+
+                String resultString = staffId + " " + doctorName + " " + field;
+
+                resultArray.add(resultString);
+            }
+
+            return resultArray;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return new ArrayList<>();
+    }
+
+
+    
 }

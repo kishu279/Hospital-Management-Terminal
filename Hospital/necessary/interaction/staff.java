@@ -22,10 +22,9 @@ public class staff {
 
             loggedIn = StaffTable.EmailPasswordVerifyQuery(userEmail, password);
 
-            System.out.println("logged in : " + loggedIn);
-
             if (loggedIn == 1) {
                 // doctor interaction
+                staff.DoctorInteraction();
                 break;
             } else if (loggedIn == 2) {
                 // recieptionist interaction
@@ -49,10 +48,15 @@ public class staff {
             // ...
 
             ch = sc.nextInt();
-            
-            if(ch == 1) {
+
+            if (ch == 1) {
                 patients = AppointmentTable.GetPatientAppointmentsQuery();
-            } else if(ch == 2) {
+
+                for (int i = 0; i < patients.size(); i++) {
+                    System.out.println(patients.get(i));
+                }
+
+            } else if (ch == 2) {
                 int doctorId, appointmentId;
                 System.out.println("Enter the Doctor Id ");
                 doctorId = sc.nextInt();
@@ -60,14 +64,19 @@ public class staff {
                 System.out.print("Enter the Appointment Id ");
                 appointmentId = sc.nextInt();
 
-                // Appointment status update
+                System.out.println("Enter the date and time for scheduling (format: YYYY-MM-DD HH:MM:SS)");
+                sc.nextLine(); // Consume the newline character
+                String scheduledTime = sc.nextLine();
 
-            
+                // Appointment status update
+                if (AppointmentTable.AppointmentSchedulerUpdate(doctorId, appointmentId, "scheduled", scheduledTime)) {
+                    System.out.println("Status updated");
+                } else {
+                    System.out.println("Failed to update the status");
+                }
             }
 
-            
-
-        } while(true);
+        } while (true);
     }
 
     public static void DoctorInteraction() {

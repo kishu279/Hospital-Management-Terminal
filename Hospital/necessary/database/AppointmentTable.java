@@ -1,6 +1,5 @@
 package Hospital.necessary.database;
 
-import java.lang.reflect.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,7 +7,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import Hospital.necessary.Connector;
-import Hospital.necessary.interaction.patient;
 
 public class AppointmentTable {
     public static int InsertQuery(int patientId, String problem) {
@@ -72,6 +70,36 @@ public class AppointmentTable {
     }
 
     public static ArrayList<String> GetPatientAppointmentsQuery() {
+        Connection conn = Connector.connector();
+
+        if (conn == null) {
+            System.out.println("Failed to get database connection.");
+            return new ArrayList<>();
+        }
+
+        String query = "SELECT * FROM appointments WHERE status='pending' ORDER BY appointmentId DESC";
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            ResultSet rs = stmt.executeQuery();
+            ArrayList<String> result = new ArrayList<>();
+
+            while (rs.next()) {
+                String appointmentId = rs.getString("appointmentId");
+                String status = rs.getString("status");
+                String problem = rs.getString("problemDescription");
+
+                String resultString = "Appointment ID: " + appointmentId + ", Problem: " + problem + ", Status: "
+                        + status;
+                result.add(resultString);
+            }
+
+            return result;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    public static Boolean AppointmentSchedulerUpdate(int doctorId, int appointmentId, String status, String time) {
 
         Connection conn = Connector.connector();
 
@@ -80,33 +108,25 @@ public class AppointmentTable {
             System.out.println("Failed to get database connection.");
         }
 
-        String query = "SELECT * FROM appointments where status=pending";
-
+        String query = "UPDATE appointments SET status=? , doctorId=?, scheduledTime=? WHERE appointmentId=?";
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            // stmt.setString(1, status);
+            // stmt.setInt(2, doctorId);
+            // stmt.setInt(3, appointmentId);
 
-            ResultSet rs = stmt.executeQuery();
-            ArrayList<String> result = new ArrayList<String>();
-            
-            while(rs.next()) {
-                String appointmentId = rs.getString("appointmentId");
-                String patientId = rs.getString("patientId");
-                String status = rs.getString("status");
-                String problem = rs.getString("problemDescription");
+            stmt.setString(1, status);
+            stmt.setInt(2, doctorId);
+            stmt.setString(3, time);
+            stmt.setInt(4, appointmentId);
 
-                String resultString = appointmentId + patientId + problem + status;
-                
-                result.add(resultString);
-            }
+            int rowsAffected = stmt.executeUpdate();
 
-
-            return result;
-        } catch(SQLException e) {
+            return rowsAffected > 0;
+        } catch (SQLException e) {
             e.printStackTrace();
-            return new ArrayList<>();
         }
-    }
 
-    public static Boolean AppointmentStatusUpdate(int doctorId, int appointmentId) {
         return false;
     }
+
 }

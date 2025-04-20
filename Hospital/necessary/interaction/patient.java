@@ -52,7 +52,7 @@ public class patient {
 
                         break;
                     case 2:
-                        // check for the appointment status and the billing status
+                        // Print the prescription
 
                         break;
                     case 3:
