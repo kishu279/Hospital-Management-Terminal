@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import Hospital.necessary.Connector;
-import Hospital.necessary.interaction.patient;
 
 public class BillTable {
     public static int CreateBill(int appointmentId) {
@@ -67,7 +66,7 @@ public class BillTable {
         }
     }
 
-    public static ArrayList<String> BilledPendingAppointments() {
+    public static ArrayList<String> BilledScheduledAppointments(int doctorId) {
         Connection conn = Connector.connector();
 
         if (conn == null) {
@@ -75,8 +74,10 @@ public class BillTable {
             return new ArrayList<String>();
         }
 
-        String query = "SELECT ap.appointmentId, ap.problemDescription, ap.patientId FROM appointments AS ap INNER JOIN bills AS bi ON ap.appointmentId = bi.appointmentId WHERE ap.status='pending' AND bi.paymentStatus=1";
+        String query = "SELECT ap.appointmentId, ap.problemDescription, ap.patientId FROM appointments AS ap INNER JOIN bills AS bi ON ap.appointmentId = bi.appointmentId WHERE ap.status='scheduled' AND bi.paymentStatus=1";
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            // stmt.setInt(1, doctorId);
 
             ResultSet rs = stmt.executeQuery();
             ArrayList<String> resultArray = new ArrayList<String>();
@@ -99,6 +100,32 @@ public class BillTable {
         }
 
         return new ArrayList<String>();
+    }
+
+    public static int GetBillIdByAppointmentId(int appointmentId) {
+        Connection conn = Connector.connector();
+
+        // Check for the connection
+        if (conn == null) {
+            System.out.println("Failed to get database connection.");
+            return -1; // Indicate failure
+        }
+
+        String query = "SELECT billId FROM bills WHERE appointmentId = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, appointmentId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("billId"); // Return the billId if found
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return -1; // Return -1 if no bill is found or an error occurs
     }
 
 }

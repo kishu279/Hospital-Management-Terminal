@@ -3,7 +3,9 @@ package Hospital.necessary.interaction;
 import java.util.Scanner;
 
 import Hospital.necessary.database.AppointmentTable;
+import Hospital.necessary.database.BillTable;
 import Hospital.necessary.database.PatientTable;
+import Hospital.necessary.database.PrescriptionTable;
 
 public class patient {
 
@@ -35,11 +37,13 @@ public class patient {
             int appointmentId = AppointmentTable.InsertQuery(userId, problem);
             System.out.println("Appointment id : " + appointmentId);
 
+            int billId = -1;
+
             while (true) {
                 System.out.println();
                 System.out.println("Check Appointment Status : 1");
                 System.out.println("Prescription Panel Print : 2");
-                System.out.println("Bill Status : 3");
+                System.out.println("Pay the bill : 3");
                 System.out.println("Exit : CTRL^C");
 
                 int choice = sc.nextInt();
@@ -50,13 +54,28 @@ public class patient {
                         String status = AppointmentTable.GetAppointmentStatusQuery(appointmentId);
                         System.out.println("Appontment status : " + status);
 
+                        if (status.equals("pending")) {
+                            System.out.println("Pay the bill");
+                        }
+
                         break;
                     case 2:
                         // Print the prescription
 
+                        String statementString = PrescriptionTable.GetPrescriptionByAppointmentId(appointmentId);
+
+                        System.out.println("Prescribed : " + statementString);
+
                         break;
                     case 3:
-                        // bill status
+                        // Pay the bill
+                        billId = BillTable.GetBillIdByAppointmentId(appointmentId);
+
+                        if (BillTable.UpdateBillPaymentStatus(billId)) {
+                            System.out.println("Billed");
+                        } else {
+                            System.out.println("get the bill first");
+                        }
 
                         break;
                     default:

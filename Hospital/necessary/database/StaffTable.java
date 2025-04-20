@@ -7,15 +7,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import Hospital.necessary.Connector;
+import Hospital.necessary.interaction.staff;
 
 public class StaffTable {
-    public static int EmailPasswordVerifyQuery(String email, String password) {
+    public static void EmailPasswordVerifyQuery(String email, String password) {
 
         Connection conn = Connector.connector();
 
         if (conn == null) {
             System.out.println("Failed to get database connection.");
-            return -1; // Indicate failure
+            return; // Indicate failure
         }
 
         // Safety measures
@@ -39,21 +40,23 @@ public class StaffTable {
                             .println("Logged in as " + staffName + " with id: " + staffId + ", workding as : " + field);
 
                     if (role.equals("doctor")) {
-                        return 1;
+                        int doctorId = rs.getInt("staffId");
+                        staff.DoctorInteraction(doctorId);
+
                     } else if (role.equals("receptionist")) {
-                        return 2;
+                        staff.RecieptionistInteraction();
                     }
 
-                    return 0;
+                    return;
                 } else {
                     System.out.println("Invalid email or password.");
-                    return 0;
+                    return;
                 }
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            return -2;
+            return;
         }
 
     }
@@ -93,6 +96,4 @@ public class StaffTable {
         return new ArrayList<>();
     }
 
-
-    
 }

@@ -1,9 +1,13 @@
 package Hospital.necessary.interaction;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 import Hospital.necessary.database.AppointmentTable;
+import Hospital.necessary.database.BillTable;
+import Hospital.necessary.database.PrescriptionTable;
 import Hospital.necessary.database.StaffTable;
 
 public class staff {
@@ -20,19 +24,7 @@ public class staff {
             System.out.println("Enter password ");
             password = sc.nextLine();
 
-            loggedIn = StaffTable.EmailPasswordVerifyQuery(userEmail, password);
-
-            if (loggedIn == 1) {
-                // doctor interaction
-                staff.DoctorInteraction();
-                break;
-            } else if (loggedIn == 2) {
-                // recieptionist interaction
-                staff.RecieptionistInteraction();
-                break;
-            } else {
-                System.out.println("Failed to login");
-            }
+            StaffTable.EmailPasswordVerifyQuery(userEmail, password);
         }
     }
 
@@ -45,11 +37,12 @@ public class staff {
         do {
             System.out.println("Get Pending Appointment Status : 1");
             System.out.println("Update the Appointments : 2");
-            // ...
-
+            System.out.println("Create a Bill : 3"); // New option for creating a bill
             ch = sc.nextInt();
 
             if (ch == 1) {
+                System.out.println("Patients: ");
+                System.out.println("");
                 patients = AppointmentTable.GetPatientAppointmentsQuery();
 
                 for (int i = 0; i < patients.size(); i++) {
@@ -74,12 +67,81 @@ public class staff {
                 } else {
                     System.out.println("Failed to update the status");
                 }
+
+            } else if (ch == 3) { // New case for creating a bill
+                System.out.print("Enter the Appointment Id for billing: ");
+                int appointmentId = sc.nextInt();
+
+                int billId = BillTable.CreateBill(appointmentId); // Call CreateBill method
+
+                if (billId != -1) {
+                    System.out.println("Bill created successfully. Bill ID: " + billId);
+                } else {
+                    System.out.println("Failed to create the bill. Please check the appointment ID.");
+                }
             }
 
         } while (true);
     }
 
-    public static void DoctorInteraction() {
+    public static void DoctorInteraction(int doctorId) {
+
+        Scanner sc = new Scanner(System.in);
+
+        ArrayList<String> patients = new ArrayList<String>();
+
+        do {
+            int ch = 0;
+
+            System.out.println("Check for the appointments scheduled : 1");
+            System.out.println("Updte the appointment : 2");
+
+            ch = sc.nextInt();
+
+            switch (ch) {
+                case 1:
+
+                    System.out.println("Patients details:");
+                    patients = BillTable.BilledScheduledAppointments(doctorId);
+
+                    for (int i = 0; i < patients.size(); i++) {
+                        System.out.println(patients.get(i));
+                    }
+
+                    break;
+                case 2:
+                    // create the prescription
+                    System.out.println("Enter the Appointment Id ");
+                    int appointmentId = sc.nextInt();
+
+                    System.out.println("Enter the content ");
+                    sc.nextLine();
+                    String content = sc.nextLine();
+
+                    if (PrescriptionTable.CreatePrescription(appointmentId, content)) {
+                        System.out.println("Prescription Added");
+
+                        LocalDateTime myTime = LocalDateTime.now();
+                        DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+                        String formattedTime = myTime.format(timeFormat);
+
+                        // appointment update
+                        if (AppointmentTable.AppointmentSchedulerUpdate(doctorId, appointmentId,
+                                "done", formattedTime)) {
+                            System.out.println("Appointment done ");
+                        }
+
+                    } else {
+                        System.out.println("Failed to do so");
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+        } while (true);
+
     }
 
 }
