@@ -13,38 +13,38 @@ public class patient {
         Scanner sc = new Scanner(System.in);
 
         try {
-
             String name, idProof, problem;
             int age;
 
             // Ask for the details
-            System.out.println("Enter Patients Details: ");
-            System.out.println("Name : ");
+            System.out.println("=== Enter Patient Details ===");
+            System.out.print("Name: ");
             name = sc.nextLine();
-            System.out.println("Age : ");
+            System.out.print("Age: ");
             age = sc.nextInt();
-            System.out.println("ID Proof : ");
-            sc.nextLine();
+            System.out.print("ID Proof: ");
+            sc.nextLine(); // Consume the newline character
             idProof = sc.nextLine();
 
             // Insert the details query
             int userId = PatientTable.InsertQuery(name, idProof, age);
-            System.err.println("Patient id : " + userId);
+            System.out.println("\nPatient ID: " + userId);
 
-            System.err.println("Enter the Problems : ");
+            System.out.print("\nEnter the Problem Description: ");
             problem = sc.nextLine();
 
             int appointmentId = AppointmentTable.InsertQuery(userId, problem);
-            System.out.println("Appointment id : " + appointmentId);
+            System.out.println("\nAppointment ID: " + appointmentId);
 
             int billId = -1;
 
             while (true) {
-                System.out.println();
-                System.out.println("Check Appointment Status : 1");
-                System.out.println("Prescription Panel Print : 2");
-                System.out.println("Pay the bill : 3");
-                System.out.println("Exit : CTRL^C");
+                System.out.println("\n=== Patient Menu ===");
+                System.out.println("1. Check Appointment Status");
+                System.out.println("2. Print Prescription");
+                System.out.println("3. Pay the Bill");
+                System.out.println("4. Exit (CTRL+C)");
+                System.out.print("Enter your choice: ");
 
                 int choice = sc.nextInt();
 
@@ -52,36 +52,40 @@ public class patient {
                     case 1:
                         // Check Appointment Status
                         String status = AppointmentTable.GetAppointmentStatusQuery(appointmentId);
-                        System.out.println("Appontment status : " + status);
+                        System.out.println("\nAppointment Status: " + status);
 
                         if (status.equals("pending")) {
-                            System.out.println("Pay the bill");
+                            System.out.println("Action Required: Please pay the bill.");
                         }
-
                         break;
+
                     case 2:
                         // Print the prescription
+                        String prescription = PrescriptionTable.GetPrescriptionByAppointmentId(appointmentId);
 
-                        String statementString = PrescriptionTable.GetPrescriptionByAppointmentId(appointmentId);
-
-                        System.out.println("Prescribed : " + statementString);
-
+                        if (prescription != null) {
+                            System.out.println("\n=== Prescription ===");
+                            System.out.println(prescription);
+                        } else {
+                            System.out.println("\nNo prescription found for this appointment.");
+                        }
                         break;
+
                     case 3:
                         // Pay the bill
                         billId = BillTable.GetBillIdByAppointmentId(appointmentId);
 
-                        if (BillTable.UpdateBillPaymentStatus(billId)) {
-                            System.out.println("Billed");
+                        if (billId != -1 && BillTable.UpdateBillPaymentStatus(billId)) {
+                            System.out.println("\nPayment Successful! Bill ID: " + billId);
                         } else {
-                            System.out.println("get the bill first");
+                            System.out.println("\nError: Please ensure the bill exists before attempting payment.");
                         }
-
                         break;
+
                     default:
+                        System.out.println("\nInvalid choice. Please try again.");
                         break;
                 }
-
             }
 
         } catch (Exception e) {
